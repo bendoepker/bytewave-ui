@@ -13,5 +13,6 @@ lib_dir = join_paths(cwd, 'lib')
 raylib = cc.find_library('raylib', dirs: lib_dir)
 
 dependencies = [winmm, opengl, gdi32, raylib]
+src = ['bw-components.c']
 
-executable('bw-ui', 'main.c', dependencies: dependencies)
+executable('bw-ui', 'main.c', dependencies: dependencies, sources: src)
