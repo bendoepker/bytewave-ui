@@ -18,6 +18,8 @@ int main() {
                                                   | FLAG_MSAA_4X_HINT
                                                   | FLAG_VSYNC_HINT);
 
+    SetTargetFPS(60);
+
     uint64_t clayRequiredMemory = Clay_MinMemorySize();
 
     Clay_Arena clayMemory = (Clay_Arena) {
@@ -53,7 +55,7 @@ int main() {
              .backgroundColor = {
                 140, 140, 140, 255
              }
-        }){ }
+        }){ /* Child Components in here */ }
 
         Clay_RenderCommandArray renderCommands = Clay_EndLayout();
 
