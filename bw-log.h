@@ -5,19 +5,32 @@
 *        stdout / stderr at the same time, use with caution on multithreaded functions
 */
 
-#include <stdio.h>
 #include <stdarg.h>
 
 void _bw_log(const char* s, ...);
 
-#ifdef BW_LOG
+//General Log Statements
+#if defined BW_LOG || defined BW_LOG_GEN
+#define BW_LOG_GEN(s) \
+    _bw_log("[LOG] %s\n", s)
+#else 
+#define BW_LOG_GEN
+#endif
 
-#define BW_LOG_FUNCTION(s) \
-    _bw_log("[LOG] Called Function: %s\n", s)
-
+//Error Log Statements
+#if defined BW_LOG || defined BW_LOG_ERRORS
+#define BW_LOG_ERROR(s) \
+    _bw_log("[ERROR] %s\n", s)
 #else
+#define BW_LOG_ERROR(s)
+#endif
 
+//Function Log Statements
+#if defined BW_LOG || defined BW_LOG_FUNCTIONS
+#define BW_LOG_FUNCTION(s) \
+    _bw_log("[LOG FUNC] Called Function: %s\n", s)
+#else
 #define BW_LOG_FUNCTION(s)
+#endif
 
-#endif //BW_LOG defined
 #endif //BW_LOG_H
