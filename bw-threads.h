@@ -13,6 +13,8 @@
     //Yeah I might skip this one for a while
 #endif //Mac
 
+#include <stdint.h>
+
 typedef enum {
 #ifdef _WIN32
     BW_HIGH_PRIORITY = THREAD_PRIORITY_TIME_CRITICAL,
@@ -21,15 +23,15 @@ typedef enum {
 #endif //Windows
 #ifdef __linux__
     //'nice' values not priority values
-    BW_HIGH_PRIORITY = -20,
-    BW_NORMAL_PRIORITY = 0,
-    BW_LOW_PRIORITY = 19,
+    BW_HIGH_PRIORITY = 99,
+    BW_NORMAL_PRIORITY = 50,
+    BW_LOW_PRIORITY = 1,
 #endif //Linux
 } BW_THREAD_PRIORITY;
 
 //Struct to pass function pointer and data to the create_thread function
 typedef struct {
-    void (*function)(void*);
+    void* (*function)(void*);
     void* data;
 } function_data;
 

@@ -1,5 +1,6 @@
 #include "bw-threads.h"
 #include "bw-log.h"
+#include <stdio.h>
 
 size_t get_thread_priority() {
 #ifdef _WIN32
@@ -7,8 +8,15 @@ size_t get_thread_priority() {
     return GetThreadPriority(cur_thr);
 #endif
 #ifdef __linux__
-    //TODO: This
+    pthread_t cur_thr = pthread_self();
+    struct sched_param sp;
+    int policy;
+    if(pthread_getschedparam(cur_thr, &policy, &sp) != 0) {
+        BW_LOG_ERROR("Failed to get pthread scheduling params.");
+    }
+    return sp.sched_priority;
 #endif
+    return SIZE_MAX; //No operating system defined, thats up to you to figure out
 }
 
 //Sets the priority of the thread
@@ -19,32 +27,42 @@ void set_thread_priority(BW_THREAD_PRIORITY priority) {
     return;
 #endif
 #ifdef __linux__
-    //TODO: This
+    pthread_t cur_thr = pthread_self();
+    struct sched_param sp;
+    sp.sched_priority = priority;
+    if(pthread_setschedparam(cur_thr, SCHED_FIFO, &sp) != 0) {
+        BW_LOG_ERROR("Failed to set pthread scheduling (requires root privilege).");
+    }
+    return;
 #endif
 }
 
 //Intermediate function that is passed to the create_thread function
 //May need to be used in other OS's?
 #ifdef _WIN32
-static DWORD WINAPI __intermediate_function(void* func_data) {
+static inline DWORD WINAPI __intermediate_function(void* func_data) {
+    //TODO: Test that this works with a return value of (void*) as opposed to (void)
     function_data* data = (function_data*)func_data;
     data->function(data->data);
     return 0;
 }
 #endif //Windows
 
-//Returns zero on success, else returns a non-zero number
+//Returns a thread ID of the new thread on succes, returns 0 on fail
 size_t create_thread(function_data* func_data, BW_THREAD_PRIORITY priority) {
 #ifdef _WIN32
+    //TODO: Return handle to the thread
     HANDLE t_out = CreateThread(NULL, 0, __intermediate_function, (void*)func_data, 0, 0);
     if(t_out == NULL) return 1;
     if(SetThreadPriority(t_out, priority) == 0) return 1;
     return 0;
-
 #endif //Windows
 #ifdef __linux__
-    //TODO: This
-
+    pthread_t t_out = 0;
+    if(pthread_create(&t_out, NULL, func_data->function, func_data->data) != 0){
+        BW_LOG_ERROR("Failed to create a new thread.");
+    }
+    return t_out;
 #endif //Linux
 
     return 1; //No operating system defined, that's above my pay grade
