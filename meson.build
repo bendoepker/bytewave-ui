@@ -44,12 +44,16 @@ if build_machine.system() == 'linux'
   dependencies += X11
 endif
 
-
-
+#Raylib
 cwd = meson.current_source_dir()
 lib_dir = join_paths(cwd, 'lib')
 raylib = cc.find_library('raylib', dirs: lib_dir)
 dependencies += raylib
 
+#Compiler Defines
+c_args = []
 
-executable('bw-ui', 'main.c', dependencies: dependencies)
+#Debug Logging
+c_args += ['-DBW_LOG']
+
+executable('bw-ui', 'main.c', 'bw-threads.c', 'bw-log.c', dependencies: dependencies, c_args: c_args)
