@@ -2,7 +2,14 @@
 #include "lib/clay.h"
 #include "lib/clay_renderer.c"
 
+#ifdef _WIN32
 #include "win_def.h"
+#include <windows.h>
+#endif //Windows
+#ifdef __linux__
+#include <unistd.h>
+#define Sleep(ms) usleep(1000 * ms)
+#endif
 #include "bw-threads.h"
 
 #include "lib/raylib.h"
@@ -19,8 +26,8 @@ void HandleClayErrors(Clay_ErrorData error_data) {
 void thread_func(void* data){
     BW_LOG_FUNCTION("thread_func");
     for(int x = 0; x < 5; x++) {
-        printf("Hello World\n");
         Sleep(500);
+        printf("Hello World\n");
     }
 }
 
@@ -30,9 +37,9 @@ int main() {
                                                   | FLAG_MSAA_4X_HINT
                                                   | FLAG_VSYNC_HINT);
     SetTargetFPS(60);
-    printf("INFO: Thread Priority Level: 0x%llX\n", get_thread_priority());
+    printf("INFO: Thread Priority Level: 0x%lX\n", get_thread_priority());
     set_thread_priority(BW_HIGH_PRIORITY);
-    printf("INFO: Thread Priority Level: 0x%llX\n", get_thread_priority());
+    printf("INFO: Thread Priority Level: 0x%lX\n", get_thread_priority());
 
     uint64_t clayRequiredMemory = Clay_MinMemorySize();
 
@@ -50,7 +57,7 @@ int main() {
     SetTextureFilter(fonts[0].texture, TEXTURE_FILTER_BILINEAR);
     Clay_SetMeasureTextFunction(Raylib_MeasureText, &fonts[0]);
 
-    create_thread(&(function_data){ .function = thread_func, .data = 0 }, BW_HIGH_PRIORITY);
+    create_thread(&(function_data){ .function = (void*)thread_func, .data = 0 }, BW_HIGH_PRIORITY);
 
     while(!WindowShouldClose()) {
         Clay_SetLayoutDimensions((Clay_Dimensions) {
