@@ -72,6 +72,19 @@ size_t wait_for_threads(bw_thread* threads, size_t thread_count) {
     return WaitForMultipleObjects(thread_count, threads, TRUE, INFINITE);
 #endif
 #ifdef __linux__
-    //TODO: Linux implementation of the wait function
+    for(int _i = 0; _i < thread_count; _i++) {
+        pthread_join(threads[_i], NULL);
+    }
+    return 0;
+#endif
+}
+
+size_t wait_for_thread(bw_thread thread) {
+#ifdef _WIN32
+    return WaitForSingleObject(thread, INFINITE);
+#endif
+#ifdef __linux__
+    pthread_join(thread, NULL);
+    return 0;
 #endif
 }

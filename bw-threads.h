@@ -54,4 +54,7 @@ bw_thread create_thread(function_data* func_data, BW_THREAD_PRIORITY priority);
 //is the number of thread ids in 'threads'
 size_t wait_for_threads(bw_thread* threads, size_t thread_count);
 
+//Waits for the thread 'thread' to complete before continuing in the function
+size_t wait_for_thread(bw_thread thread);
+
 #endif //BW_THREADS_H
