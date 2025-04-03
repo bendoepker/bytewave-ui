@@ -29,6 +29,13 @@ typedef enum {
 #endif //Linux
 } BW_THREAD_PRIORITY;
 
+#ifdef _WIN32
+    typedef HANDLE bw_thread;
+#endif
+#ifdef __linux__
+    typedef pthread_t bw_thread;
+#endif
+
 //Struct to pass function pointer and data to the create_thread function
 typedef struct {
     void* (*function)(void*);
@@ -39,6 +46,12 @@ typedef struct {
 size_t get_thread_priority();
 void set_thread_priority(BW_THREAD_PRIORITY priority);
 
-size_t create_thread(function_data* func_data, BW_THREAD_PRIORITY priority);
+//Creates a new thread and executes the function in func_data using the data in func_data
+//returns the thread id of the new thread
+bw_thread create_thread(function_data* func_data, BW_THREAD_PRIORITY priority);
+
+//Waits for all of the threads in the 'threads' array to finish, thread count
+//is the number of thread ids in 'threads'
+size_t wait_for_threads(bw_thread* threads, size_t thread_count);
 
 #endif //BW_THREADS_H

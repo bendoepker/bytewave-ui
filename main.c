@@ -23,23 +23,13 @@ void HandleClayErrors(Clay_ErrorData error_data) {
     printf("%s", error_data.errorText.chars);
 }
 
-void thread_func(void* data){
-    BW_LOG_FUNCTION("thread_func");
-    for(int x = 0; x < 5; x++) {
-        Sleep(500);
-        printf("Hello World\n");
-    }
-}
-
-int main() {
+void* ui_func(void* data){
+    BW_LOG_FUNCTION("UI Function");
     Clay_Raylib_Initialize(1024, 768, "ByteWave", FLAG_WINDOW_RESIZABLE
                                                   | FLAG_WINDOW_HIGHDPI
                                                   | FLAG_MSAA_4X_HINT
                                                   | FLAG_VSYNC_HINT);
     SetTargetFPS(60);
-    printf("INFO: Thread Priority Level: 0x%lX\n", get_thread_priority());
-    set_thread_priority(BW_HIGH_PRIORITY);
-    printf("INFO: Thread Priority Level: 0x%lX\n", get_thread_priority());
 
     uint64_t clayRequiredMemory = Clay_MinMemorySize();
 
@@ -57,8 +47,7 @@ int main() {
     SetTextureFilter(fonts[0].texture, TEXTURE_FILTER_BILINEAR);
     Clay_SetMeasureTextFunction(Raylib_MeasureText, &fonts[0]);
 
-    create_thread(&(function_data){ .function = (void*)thread_func, .data = 0 }, BW_HIGH_PRIORITY);
-
+    //Main render loop
     while(!WindowShouldClose()) {
         Clay_SetLayoutDimensions((Clay_Dimensions) {
             .width = GetScreenWidth(),
@@ -86,4 +75,18 @@ int main() {
         Clay_Raylib_Render(renderCommands, fonts);
         EndDrawing();
     }
+    return 0;
+}
+
+int main() {
+    set_thread_priority(BW_HIGH_PRIORITY);
+    printf("[LOG GEN] Main thread priority level: 0x%llX\n", get_thread_priority());
+    bw_thread ui_thr_id = create_thread(&(function_data){ .function = (void*)ui_func, .data = 0 }, BW_HIGH_PRIORITY);
+
+    //NOTE: Always adjust these together otherwise there will be problems
+    bw_thread threads[] = {ui_thr_id};
+    size_t num_threads = 1;
+
+    //Wait for all threads to complete before closing the application
+    wait_for_threads(threads, num_threads);
 }

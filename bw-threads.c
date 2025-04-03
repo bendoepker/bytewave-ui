@@ -49,13 +49,12 @@ static inline DWORD WINAPI __intermediate_function(void* func_data) {
 #endif //Windows
 
 //Returns a thread ID of the new thread on succes, returns 0 on fail
-size_t create_thread(function_data* func_data, BW_THREAD_PRIORITY priority) {
+bw_thread create_thread(function_data* func_data, BW_THREAD_PRIORITY priority) {
 #ifdef _WIN32
-    //TODO: Return handle to the thread
     HANDLE t_out = CreateThread(NULL, 0, __intermediate_function, (void*)func_data, 0, 0);
-    if(t_out == NULL) return 1;
-    if(SetThreadPriority(t_out, priority) == 0) return 1;
-    return 0;
+    if(!t_out) return 0;
+    if(SetThreadPriority(t_out, priority) == 0) return 0;
+    return t_out; //Returns 0 if the handle is invalid, else returns the thread
 #endif //Windows
 #ifdef __linux__
     pthread_t t_out = 0;
@@ -64,6 +63,15 @@ size_t create_thread(function_data* func_data, BW_THREAD_PRIORITY priority) {
     }
     return t_out;
 #endif //Linux
+    return 0; //No operating system defined, that's above my pay grade
+}
 
-    return 1; //No operating system defined, that's above my pay grade
+size_t wait_for_threads(bw_thread* threads, size_t thread_count) {
+#ifdef _WIN32
+    //TODO: Implement a meaningful return value here
+    return WaitForMultipleObjects(thread_count, threads, TRUE, INFINITE);
+#endif
+#ifdef __linux__
+    //TODO: Linux implementation of the wait function
+#endif
 }
